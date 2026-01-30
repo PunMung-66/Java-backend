@@ -13,10 +13,21 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import com.punnawat.backend.config.Token.TokenFilter;
+
+
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+    private final TokenFilter tokenFilter;
+
+    public SecurityConfig(TokenFilter tokenFilter){
+        this.tokenFilter = tokenFilter;
+    }
+    
     @Bean
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
@@ -25,7 +36,7 @@ public class SecurityConfig {
     @Bean
     public UserDetailsService userDetailsService(PasswordEncoder encoder) {
 
-        UserDetails admin = User.withUsername("admin")
+        UserDetails userDetails = User.withUsername("admin")
                 .password(encoder.encode("admin123"))
                 .roles("ADMIN", "USER") // 👈 admin has both roles
                 .build();
@@ -35,7 +46,7 @@ public class SecurityConfig {
 //                .roles("USER") // 👈 normal user
 //                .build();
 
-        return new InMemoryUserDetailsManager(admin);
+        return new InMemoryUserDetailsManager(userDetails);
     }
 
     @Bean
@@ -48,10 +59,11 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/user/register", "/api/user/login").permitAll()
+                        .requestMatchers("/api/product/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/api/**").hasRole("ADMIN")
-//                        .requestMatchers("/api/product/**").hasAnyRole("USER", "ADMIN")
                         .anyRequest().authenticated()
-                ).httpBasic(Customizer.withDefaults());
+                ).addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class)
+                //.httpBasic(Customizer.withDefaults());
         ;
 
         return http.build();
