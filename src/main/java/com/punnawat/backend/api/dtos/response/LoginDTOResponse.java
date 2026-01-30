@@ -10,4 +10,5 @@ import java.time.LocalDateTime;
 public class LoginDTOResponse {
     private LocalDateTime timestamp;
     private String message;
+    private TokenResponse data;
 }

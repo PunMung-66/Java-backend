@@ -4,6 +4,7 @@ import com.punnawat.backend.api.dtos.request.LoginDTORequest;
 import com.punnawat.backend.api.dtos.request.RegisterDTORequest;
 import com.punnawat.backend.api.dtos.response.LoginDTOResponse;
 import com.punnawat.backend.api.dtos.response.RegisterDTOResponse;
+import com.punnawat.backend.api.dtos.response.TokenResponse;
 import com.punnawat.backend.entity.User;
 import com.punnawat.backend.expections.BaseException;
 import com.punnawat.backend.expections.FileException;
@@ -57,8 +58,8 @@ public class UserBusiness {
         if (request.getPassword() == null) {
             throw UserException.requestPasswordNull();
         }
-        String message = userService.verifyLogin(request.getEmail(), request.getPassword());
-        return new LoginDTOResponse(LocalDateTime.now(), message);
+        TokenResponse data = userService.verifyLogin(request.getEmail(), request.getPassword());
+        return new LoginDTOResponse(LocalDateTime.now(), "Login Successfully", data);
     }
 
     public String uploadProfilePicture(MultipartFile file) throws FileException {

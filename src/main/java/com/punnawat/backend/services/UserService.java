@@ -1,5 +1,6 @@
 package com.punnawat.backend.services;
 
+import com.punnawat.backend.api.dtos.response.TokenResponse;
 import com.punnawat.backend.entity.User;
 import com.punnawat.backend.expections.UserException;
 import com.punnawat.backend.repositorys.UserRepository;
@@ -14,11 +15,13 @@ import java.util.Optional;
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final TokenService tokenService;
 
     @Autowired
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder){
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, TokenService tokenService){
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.tokenService = tokenService;
     }
 
     public User create(String email, String password, String name) throws UserException {
@@ -44,7 +47,7 @@ public class UserService {
         return userRepository.save(entity);
     }
 
-    public String verifyLogin(String email, String password) throws UserException {
+    public TokenResponse verifyLogin(String email, String password) throws UserException {
         // Validate
         if (Objects.isNull(email)){
             throw UserException.verifyLoginEmailNull();
@@ -61,11 +64,14 @@ public class UserService {
         }
 
         String rawPassword = password;
+
         String encodedPassword = existingAccount.get().getPassword();
         if (!passwordEncoder.matches(rawPassword, encodedPassword)){
             throw UserException.verifyLoginFailed();
         }
 
-        return "LOGIN_SUCCESS";
+        TokenResponse token = tokenService.tokenize(existingAccount.get());
+
+        return token;
     }
 }
