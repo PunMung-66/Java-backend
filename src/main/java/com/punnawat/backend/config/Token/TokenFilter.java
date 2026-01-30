@@ -20,6 +20,7 @@ import java.util.List;
 public class TokenFilter extends OncePerRequestFilter {
 
   private final TokenService tokenService;
+  
 
   public TokenFilter(TokenService tokenService) {
     this.tokenService = tokenService;
